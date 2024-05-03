@@ -86,7 +86,7 @@ def get_user_account_data(first_name, last_name):
     # Setup database connection
     try:
         conn = psycopg2.connect(
-            host='deep-hook-419115:us-central1:tp-internal-bank-data', 
+            host=os.getenv("CLOUD_SQL_HOST"), 
             dbname='postgres',
             user='postgres',
             password= os.getenv("CLOUD_SQL_PASSWORD")
