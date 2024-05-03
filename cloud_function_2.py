@@ -16,6 +16,9 @@ def hello_pubsub(cloud_event):
     # Process the image using Vision API (OCR)
     extracted_text = process_image_with_vision(pubsub_message['doc_image_url'])
 
+    # Simualtes the Third-party API (central bank) call
+    central_bank_data = get_data_from_central_bank()
+    
     # Notifies the customer
     email_content = f"Extracted Texts: {extracted_text}\nCredit Score: {pubsub_message['credit_score']}\nClient: {pubsub_message['client_first_name']} {pubsub_message['client_last_name']}\nBalance: {pubsub_message['client_balance']}"
 
@@ -53,6 +56,9 @@ def process_image_with_vision(image_url):
     else:
         return "No text found"
 
+def get_data_from_central_bank():
+    return "Mock Data"
+    
 def parse_gcs_url(gcs_url):
     """Helper function to parse GCS URLs into bucket and blob names."""
     if not gcs_url.startswith('gs://'):
