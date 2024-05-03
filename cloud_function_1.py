@@ -30,10 +30,12 @@ def readUserData(request):
     client_first_name = ""
     client_balance = ""
     for file_url in file_urls:
+        # Loop over Cloud Storage new files
         bucket_name, blob_name = parse_gcs_url(file_url)
         bucket = storage_client.bucket(bucket_name)
         blob = bucket.blob(blob_name)
         if file_url.endswith(('.jpg', '.jpeg', '.png')):
+            # If the file is a document, we download it and then send it to the Vision API (For OCR)
             image_content = blob.download_as_bytes()
 
             payload = {
@@ -49,6 +51,7 @@ def readUserData(request):
 
             response = requests.post(vision_api_url, json=payload)
             result = response.json()
+            # we read the OCR Response
             if 'textAnnotations' in result['responses'][0]:
                 text_results.append(result['responses'][0]['textAnnotations'][0]['description'])
             else:
@@ -56,13 +59,14 @@ def readUserData(request):
             image_url = file_url
 
         elif file_url.endswith('.json'):
-            # Assuming this is the JSON file with client data
+            # Assuming this is the JSON file with client data, we simply take the fields we need
             json_content = blob.download_as_text()
             data = json.loads(json_content)
             if 'result' in data and len(data['result']) > 0:
                 client = data['result'][0]
                 client_first_name = client['name']['first']
                 client_last_name = client['name']['last']
+                # This calls the Cloud SQL DB and retrieves user data
                 client_balance = get_user_account_data(client_first_name, client_last_name)
     # Simulate score calculation
     credit_score = calculate_credit_score()
@@ -77,7 +81,7 @@ def readUserData(request):
     }
     message = json.dumps(result)
     
-    # Publish message
+    # Publish message to the adequate topic
     publisher.publish(topic_name, message.encode("utf-8"))
 
     return f"Message published to {topic_name} {message}"
